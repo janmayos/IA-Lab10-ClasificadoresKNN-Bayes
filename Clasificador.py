@@ -1,14 +1,49 @@
 import math
 import random
+from collections import defaultdict
+from statistics import mean, stdev
 
-#Funcion de distancia euclidiana el cual compara dos listas de información y con 
-# ayuda de zip permite crear un interador de tuplas el cual combina cada dato con 
-# su respectivo par ordenado de ciertos valores
-#La función zip() toma dos o más iterables (en este caso, point1 y point2) y los combina en un iterador de tuplas. Cada tupla contiene elementos de las posiciones correspondientes de los iterables.
-# Ejemplo: Si point1 = [1, 2, 3] y point2 = [4, 5, 6], zip(point1, point2) producirá un iterador que genera las tuplas (1, 4), (2, 5), (3, 6).
-
+# Función para calcular la distancia euclidiana
 def euclidean_distancia(point1, point2):
     return math.sqrt(sum((p1 - p2) ** 2 for p1, p2 in zip(point1, point2)))
+
+# Clasificador KNN
+def clasificador_knn(caracteristicas, clases, punto_prueba, k=3):
+    distancias = [(euclidean_distancia(punto, punto_prueba), clase) for punto, clase in zip(caracteristicas, clases)]
+    distancias.sort(key=lambda x: x[0])
+    k_vecinos = distancias[:k]
+    clases_vecinos = [clase for _, clase in k_vecinos]
+    return max(set(clases_vecinos), key=clases_vecinos.count)
+
+# Clasificador Naive Bayes
+def clasificador_naive_bayes(caracteristicas, clases, punto_prueba):
+    clases_unicas = set(clases)
+    prob_clases = {clase: clases.count(clase) / len(clases) for clase in clases_unicas}
+    prob_condicional = defaultdict(lambda: defaultdict(list))
+
+    for i, clase in enumerate(clases):
+        for j, valor in enumerate(caracteristicas[i]):
+            prob_condicional[clase][j].append(valor)
+
+    for clase in clases_unicas:
+        for j in range(len(caracteristicas[0])):
+            valores = prob_condicional[clase][j]
+            mean_val = sum(valores) / len(valores)
+            stdev_val = math.sqrt(sum((x - mean_val) ** 2 for x in valores) / len(valores))
+            prob_condicional[clase][j] = (mean_val, stdev_val)
+
+    def probabilidad_gaussiana(x, mean, stdev):
+        exponent = math.exp(-((x - mean) ** 2 / (2 * stdev ** 2)))
+        return (1 / (math.sqrt(2 * math.pi) * stdev)) * exponent
+
+    prob_posterior = {}
+    for clase in clases_unicas:
+        prob_posterior[clase] = prob_clases[clase]
+        for j, valor in enumerate(punto_prueba):
+            mean, stdev = prob_condicional[clase][j]
+            prob_posterior[clase] *= probabilidad_gaussiana(valor, mean, stdev)
+
+    return max(prob_posterior, key=prob_posterior.get)
 
 ###3 distanias media
 
