@@ -46,6 +46,7 @@ def ejecutar(rutas_data):
 
         dataexcelmatriz.append(dataexcel)
 
+    print(dataexcelmatriz)
     crear_excel("Dataset accuracy", dataexcelmatriz, ["Ruta dataset", "Euclidiano HO", "Euclidiano KF CV", "Euclidiano LOO", "1-NN HO", "1-NN KF CV", "1-NN LOO", "KNN HO", "KNN KF CV", "KNN LOO", "Naive Bayes HO", "Naive Bayes KF CV", "Naive Bayes LOO"])
 
 if __name__ == "__main__":
